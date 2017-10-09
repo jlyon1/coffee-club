@@ -2,15 +2,64 @@
 <head>
   <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Arvo">
   <link rel="stylesheet" type="text/css" href="styles.css"/>
-  <script type="text/javascript" src="js/paper.js"></script>
+  <script type="text/javascript" src="bower_components/paper/dist/paper-full.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script type="text/paperscript" canvas="myCanvas">
+    var width, height, center;
+    var points = 10;
+    var smooth = true;
+    var path = new Path();
+    var mousePos = view.center / 2;
+    var pathHeight = mousePos.y;
+    path.fillColor = 'white';
+    path.fullySelected = false;
+    initializePath();
+
+    function initializePath() {
+      center = view.center;
+      width = view.size.width;
+      height = view.size.height / 2;
+      path.segments = [];
+      path.add(view.bounds.bottomLeft - 100);
+      for (var i = 1; i < points; i++) {
+        var point = new Point(width / points * i, center.y);
+        path.add(point);
+      }
+      path.add(view.bounds.bottomRight + 200);
+      path.fullySelected = false;
+    }
+
+    function onFrame(event) {
+      pathHeight += (center.y - mousePos.y - pathHeight) / 10;
+      for (var i = 1; i < points; i++) {
+        var sinSeed = event.count + (i + i % 10) * 100;
+        var sinHeight = Math.sin(sinSeed / 200) * pathHeight;
+        var yPos = Math.sin(sinSeed / 100) * sinHeight + height;
+        path.segments[i].point.y = yPos;
+      }
+      if (smooth)
+      path.smooth({ type: 'continuous' });
+    }
+
+    function onMouseMove(event) {
+      mousePos = event.point;
+    }
+
+    // Reposition the path whenever the window is resized:
+    function onResize(event) {
+      initializePath();
+    }
+
+  </script>
 </head>
 <body>
 <div class="title">
   Coffee Club
 </div>
 <div class="sub-title">
-  Coming soon
+  <a href="https://poly.rpi.edu/2017/09/13/shop_caters_to_hipsters_reviewer_thrilled/" >Stay Superior</a>
 </div>
+
+<canvas id="myCanvas"style="left: 0;width:150%;height:100%; float:none;position:fixed;"></canvas>
 </body>
 </html>
